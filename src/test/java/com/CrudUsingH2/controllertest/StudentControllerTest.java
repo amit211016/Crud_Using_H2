@@ -6,10 +6,9 @@ import com.CrudUsingH2.dto.StudentResponseDto;
 import com.CrudUsingH2.dto.StudentUpdateDto;
 import com.CrudUsingH2.service.StudentService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,20 +22,20 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(StudentController.class)   // Only load Controller layer
+@WebMvcTest(StudentController.class)
 class StudentControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;   // Fake Postman
+    private MockMvc mockMvc;
 
-    @Mock
-    private StudentService studentService; // Fake Service layer
+    @MockBean   // ✅ Correct - injects mock into Spring Context
+    private StudentService studentService;
 
-    // 1. GET student by id
     @Test
     void testGetStudentById() throws Exception {
         StudentResponseDto responseDto =
                 new StudentResponseDto(1L, "Amit", "Singh", "Male", "Java", "9876543210");
+
         when(studentService.findStudentById(1L)).thenReturn(responseDto);
 
         mockMvc.perform(get("/student/1"))
@@ -46,7 +45,6 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$.lastName").value("Singh"));
     }
 
-    // 2. CREATE student (POST)
     @Test
     void testCreateStudent() throws Exception {
         StudentResponseDto responseDto =
@@ -61,7 +59,6 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$.id").value(1L));
     }
 
-    // 3. DELETE student
     @Test
     void testDeleteStudent() throws Exception {
         doNothing().when(studentService).deleteStudent(1L);
@@ -70,7 +67,6 @@ class StudentControllerTest {
                 .andExpect(status().isOk());
     }
 
-    // 4. GET all students
     @Test
     void testGetAllStudents() throws Exception {
         List<StudentResponseDto> students = Arrays.asList(
@@ -87,7 +83,6 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$[1].course").value("Python"));
     }
 
-    // 5. UPDATE student
     @Test
     void testUpdateStudent() throws Exception {
         StudentResponseDto responseDto =
